@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'DOCKER_IMAGE_VERSION', defaultValue: 'V0.0', description: 'Specify the Docker image version')
+        string(name: 'DOCKER_IMAGE_VERSION', defaultValue: 'v0.0', description: 'Specify the Docker image version')
     }
 
     stages {
         stage('Checkout') {
             steps {
                 script {
+                    echo "Checking out the latest code from GitHub..."
                     git branch: 'main', url: 'https://github.com/ssllsaiful/weather-facing-api.git'
-                    // check out the branch last update
                 }
             }
         }
@@ -19,29 +19,30 @@ pipeline {
             steps {
                 script {
                     def dockerImageName = "weatherproject:${params.DOCKER_IMAGE_VERSION}"
-                    sh "docker build -t ${dockerImageName} -f /home/ubuntu/websites/weatherproject/Dockerfile ."
 
+                    echo "Building Docker image: ${dockerImageName}..."
+                    sh """
+                        docker build -t ${dockerImageName} .
+                    """
                 }
             }
         }
 
-
         stage('Deploy') {
             steps {
                 script {
-                    def composeFile = "/home/ubuntu/websites/weatherproject/docker-compose.yml"
                     def dockerImageName = "weatherproject:${params.DOCKER_IMAGE_VERSION}"
-                    sh """
-                    docker tag ${s} weatherproject:latest
-                    docker compose -f ${composeFile} up -d
-                    """
-                    currentBuild.description = "${dockerImageName}"
-                 }
+                    def composeFile = "/home/ubuntu/websites/weatherproject/docker-compose.yml"
+                    
+                    echo "Tagging the built image as 'latest'..."
+                    sh "docker tag ${dockerImageName} weatherproject:latest"
+
+                    echo "Deploying using Docker Compose..."
+                    sh "docker compose -f ${composeFile} up -d"
+
+                    currentBuild.description = "Deployed version: ${dockerImageName}"
+                }
             }
-         }
-        
+        }
     }
 }
-
-
-
