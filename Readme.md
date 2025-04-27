@@ -3,4 +3,4 @@
     python files on as named as main.py
     deployed url is = https://weather.ideahubbd.com/
 
-![alt text](image.png)
+![alt text](weather.png)
