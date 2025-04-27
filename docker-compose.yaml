@@ -1,0 +1,21 @@
+#############################
+name: weatherapp_project  # Project name for clarity
+#############################
+
+services:
+  rajneete-app:
+    image: weatherproject:latest
+    container_name: weatherproject_container
+    restart: always
+    ports:
+      - "8010:8000"  
+    networks:
+      - weatherapp_net  # Assign the service to the custom network
+    pull_policy: always  # Ensure latest image is pulled
+
+networks:
+  weatherapp_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.22.0.0/24
