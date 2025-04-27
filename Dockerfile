@@ -24,6 +24,9 @@ RUN pip install --upgrade pip && \
 # Copy app files
 COPY . .
 
+# Remove README.md file
+RUN rm -f README.md
+
 # Use non-root user for security
 RUN useradd -m appuser
 USER appuser
