@@ -1,5 +1,5 @@
 #############################
-name: weatherapp_project  # Project name for clarity
+name: weatherapp_project  # Project name 
 #############################
 
 services:
