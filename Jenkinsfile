@@ -97,6 +97,18 @@
 
 
 
+
+// stage('Push to DockerHub') {
+//     steps {
+//         script {
+//             def imageTag = "${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${env.DOCKER_IMAGE_VERSION}"
+//             sh "echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USER} --password-stdin"
+//             sh "docker push ${imageTag}"
+//         }
+//     }
+// }
+
+
 /////////////////
 
 pipeline {
@@ -111,29 +123,22 @@ pipeline {
 
     stages {
 
-        stage('Get Release Version') {
-            steps {
-                script {
-                    echo "Extracting release tag from webhook payload..."
-                    
-                    def payload = readJSON text: env.GITHUB_EVENT_PAYLOAD
-                    def releaseTag = payload.release.tag_name
-                    
-                    if (!releaseTag) {
-                        error "No release tag found in payload!"
-                    }
-                    
-                    env.DOCKER_IMAGE_VERSION = releaseTag
-                    echo "Detected Release Tag: ${env.DOCKER_IMAGE_VERSION}"
-                }
-            }
-        }
-
         stage('Checkout Code') {
             steps {
                 script {
                     echo "Checking out code from GitHub..."
                     git branch: 'main', url: 'https://github.com/ssllsaiful/weather-fetch-api.git'
+                }
+            }
+        }
+
+        stage('Get Latest Git Tag') {
+            steps {
+                script {
+                    echo "Fetching latest Git Tag..."
+                    sh "git fetch --tags"
+                    env.DOCKER_IMAGE_VERSION = sh(script: "git describe --tags `git rev-list --tags --max-count=1`", returnStdout: true).trim()
+                    echo "Detected Latest Release Tag: ${env.DOCKER_IMAGE_VERSION}"
                 }
             }
         }
@@ -149,16 +154,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Push to DockerHub') {
-        //     steps {
-        //         script {
-        //             def imageTag = "${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${env.DOCKER_IMAGE_VERSION}"
-        //             sh "echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USER} --password-stdin"
-        //             sh "docker push ${imageTag}"
-        //         }
-        //     }
-        // }
 
         stage('Deploy with Docker Compose') {
             steps {
