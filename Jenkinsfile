@@ -134,7 +134,7 @@ pipeline {
                 script {
                     echo "Checking out code from GitHub..."
                     // Corrected the GitHub repository URL
-                    git branch: 'main', url: 'https://github.com/ssllsaiful/weather-facing-api.git'
+                    git branch: 'main', url: 'https://github.com/ssllsaiful/weather-fetch-api.git'
                 }
             }
         }
