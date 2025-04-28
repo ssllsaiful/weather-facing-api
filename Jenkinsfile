@@ -108,6 +108,17 @@ pipeline {
 
     stages {
 
+
+        stage('Checkout Code') {
+            steps {
+                script {
+                    echo "Checking out code from GitHub..."
+                    // Corrected the GitHub repository URL
+                    git branch: 'main', url: 'https://github.com/ssllsaiful/weather-fetch-api.git'
+                }
+            }
+        }
+
         stage('Capture Webhook Payload') {
             steps {
                 script {
@@ -129,15 +140,7 @@ pipeline {
             }
         }
 
-        stage('Checkout Code') {
-            steps {
-                script {
-                    echo "Checking out code from GitHub..."
-                    // Corrected the GitHub repository URL
-                    git branch: 'main', url: 'https://github.com/ssllsaiful/weather-fetch-api.git'
-                }
-            }
-        }
+
 
         stage('Build Docker Image') {
             steps {
