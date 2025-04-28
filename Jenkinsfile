@@ -86,6 +86,9 @@ pipeline {
                         error "Health check failed: version mismatch (expected: ${env.DOCKER_IMAGE_VERSION}, found: ${version})"
                     }
                 }
+                script {
+                    currentBuild.description = "${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${env.DOCKER_IMAGE_VERSION}"
+                }
             }
         }
     }
