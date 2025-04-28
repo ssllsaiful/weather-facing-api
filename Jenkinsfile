@@ -19,7 +19,7 @@
 //             steps {
 //                 script {
 //                     echo "Checking out code from GitHub..."
-//                     git branch: 'main', url: 'https://github.com/ssllsaiful/weather-facing-api.git'
+//                     git branch: 'main', url: 'https://github.com/ssllsaiful/weather-fetch-api.git'
 //                 }
 //             }
 //         }
@@ -96,6 +96,10 @@
 // }
 
 
+
+/////////////////
+
+
 pipeline {
     agent any
 
@@ -107,45 +111,23 @@ pipeline {
     }
 
     stages {
-
-
         stage('Checkout Code') {
             steps {
                 script {
                     echo "Checking out code from GitHub..."
-                    // Corrected the GitHub repository URL
-                    git branch: 'main', url: 'https://github.com/ssllsaiful/weather-fetch-api.git'
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "refs/tags/${env.TAG_NAME}"]],
+                        userRemoteConfigs: [[url: 'https://github.com/ssllsaiful/weather-fetch-api.git']]
+                    ])
                 }
             }
         }
-
-        stage('Capture Webhook Payload') {
-            steps {
-                script {
-                    // Read the payload sent by the webhook (assumed to be saved as a file)
-                    def payload = readJSON file: '/tmp/github-payload.json'
-
-                    // Log the webhook payload for inspection
-                    echo "Webhook Payload: ${payload}"
-
-                    // Extract the release tag from the webhook payload (e.g., "v1.0.0")
-                    def releaseVersion = payload.release.tag_name
-
-                    // Set the version as the Docker image tag for this release
-                    echo "Release Version: ${releaseVersion}"
-
-                    // Set this version as an environment variable for later stages
-                    env.DOCKER_IMAGE_VERSION = releaseVersion
-                }
-            }
-        }
-
-
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    def imageTag = "${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${env.DOCKER_IMAGE_VERSION}"
+                    def imageTag = "${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${env.TAG_NAME}"
                     echo "Building Docker image: ${imageTag}"
 
                     sh """
@@ -158,9 +140,8 @@ pipeline {
         stage('Push to DockerHub') {
             steps {
                 script {
-                    def imageTag = "${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${env.DOCKER_IMAGE_VERSION}"
+                    def imageTag = "${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${env.TAG_NAME}"
 
-                    // Actual Docker login (instead of echo)
                     echo "Logging in to DockerHub..."
                     sh "echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USER} --password-stdin"
 
@@ -188,14 +169,13 @@ pipeline {
                     sleep(time:10, unit:"SECONDS")
 
                     echo "Checking if API is returning correct version..."
-
                     def response = sh(script: "curl --fail https://weather.ideahubbd.com/api/hello", returnStdout: true).trim()
                     echo "API Response: ${response}"
 
                     def version = sh(script: "echo '${response}' | jq -r '.version'", returnStdout: true).trim()
 
-                    if (version != "${env.DOCKER_IMAGE_VERSION}") {
-                        error "Health check failed: version mismatch (expected: ${env.DOCKER_IMAGE_VERSION}, found: ${version})"
+                    if (version != "${env.TAG_NAME}") {
+                        error "Health check failed: version mismatch (expected: ${env.TAG_NAME}, found: ${version})"
                     }
                 }
             }
