@@ -17,3 +17,8 @@
      Create a public repository for the project repo link 
     
         https://github.com/ssllsaiful/weather-fetch-api.git
+
+
+Trigger when a new release is created.
+
+    Add an event on github repo to setting for relese version automatic deployments . 
