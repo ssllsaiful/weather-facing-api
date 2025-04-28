@@ -48,7 +48,6 @@
 // }
 
 
-
 pipeline {
     agent any
 
@@ -81,22 +80,23 @@ pipeline {
                     echo "Building Docker image: ${imageTag}"
 
                     sh """
-                        docker build --build-arg APP_VERSION=${params.DOCKER_IMAGE_VERSION} -t ${imageTag} .
+                        docker build -t ${imageTag} .
                     """
                 }
             }
         }
 
-        stage('Push to DockerHub (Mocked)') {
+        stage('Push to DockerHub') {
             steps {
                 script {
                     def imageTag = "${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${params.DOCKER_IMAGE_VERSION}"
 
-                    echo "Login to DockerHub (Mock)"
-                    echo "docker login -u ${DOCKERHUB_USER} -p ${DOCKERHUB_PASSWORD}"
+                    // Actual Docker login (instead of echo)
+                    echo "Logging in to DockerHub..."
+                    sh "echo ${DOCKERHUB_PASSWORD} | docker login -u ${DOCKERHUB_USER} --password-stdin"
 
-                    echo "Pushing Docker image to DockerHub (Mock): ${imageTag}"
-                    echo "docker push ${imageTag}"
+                    echo "Pushing Docker image to DockerHub: ${imageTag}"
+                    sh "docker push ${imageTag}"
                 }
             }
         }
@@ -118,12 +118,23 @@ pipeline {
                     echo "Waiting 10 seconds for service to start..."
                     sleep(time:10, unit:"SECONDS")
 
-                    echo "Checking if API is returning correct version..."
-                    sh """
-                        curl --fail http://weather.ideahubbd.com/api/hello | grep ${params.DOCKER_IMAGE_VERSION}
-                    """
+                    def response = sh(script: "curl --fail http://weather.ideahubbd.com/api/hello", returnStdout: true).trim()
+                    echo "API Response: ${response}"
+                    
+                    if (!response.contains("${params.DOCKER_IMAGE_VERSION}")) {
+                        error "Health check failed: version mismatch"
+                    }
                 }
             }
+        }
+    }
+
+    post {
+        failure {
+            echo "Build or Deployment failed!"
+        }
+        success {
+            echo "Deployment Successful!"
         }
     }
 }
