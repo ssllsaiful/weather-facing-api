@@ -69,7 +69,7 @@ pipeline {
             }
         }
 
-        stage('Health Check') {
+        stage('Version Check') {
             steps {
                 script {
                     echo "Waiting 10 seconds for service to start..."
@@ -83,7 +83,7 @@ pipeline {
                     def version = sh(script: "echo '${response}' | jq -r '.version'", returnStdout: true).trim()
 
                     if (version != env.DOCKER_IMAGE_VERSION) {
-                        error "Health check failed: version mismatch (expected: ${env.DOCKER_IMAGE_VERSION}, found: ${version})"
+                        error "Version check : version mismatch (expected: ${env.DOCKER_IMAGE_VERSION}, found: ${version})"
                     }
                 }
                 script {
