@@ -143,7 +143,7 @@ pipeline {
                     sh "git fetch --tags"
                     env.DOCKER_IMAGE_VERSION = sh(script: "git tag --sort=-creatordate | head -n 1", returnStdout: true).trim()
                     echo "Detected Latest Release Tag: ${env.DOCKER_IMAGE_VERSION}"
-                    //test -push
+                    //test -push my test
                 }
             }
         }
