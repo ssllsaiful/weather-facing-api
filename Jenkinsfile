@@ -47,7 +47,6 @@
 //     }
 // }
 
-
 pipeline {
     agent any
 
@@ -118,11 +117,16 @@ pipeline {
                     echo "Waiting 10 seconds for service to start..."
                     sleep(time:10, unit:"SECONDS")
 
-                    def response = sh(script: "curl --fail http://weather.ideahubbd.com/api/hello", returnStdout: true).trim()
+                    echo "Checking if API is returning correct version..."
+
+
+                    def response = sh(script: "curl --fail https://weather.ideahubbd.com/api/hello", returnStdout: true).trim()
                     echo "API Response: ${response}"
-                    
-                    if (!response.contains("${params.DOCKER_IMAGE_VERSION}")) {
-                        error "Health check failed: version mismatch"
+
+                    def version = sh(script: "echo '${response}' | jq -r '.version'", returnStdout: true).trim()
+
+                    if (version != "${params.DOCKER_IMAGE_VERSION}") {
+                        error "Health check failed: version mismatch (expected: ${params.DOCKER_IMAGE_VERSION}, found: ${version})"
                     }
                 }
             }
