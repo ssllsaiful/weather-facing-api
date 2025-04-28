@@ -128,16 +128,20 @@ pipeline {
                 script {
                     echo "Checking out code from GitHub..."
                     git branch: 'main', url: 'https://github.com/ssllsaiful/weather-fetch-api.git'
+                    sh """
+                        git fetch --tags --force --prune
+                    """
                 }
             }
         }
+
 
         stage('Get Latest Git Tag') {
             steps {
                 script {
                     echo "Fetching latest Git Tag..."
                     sh "git fetch --tags"
-                    env.DOCKER_IMAGE_VERSION = sh(script: "git describe --tags `git rev-list --tags --max-count=1`", returnStdout: true).trim()
+                    env.DOCKER_IMAGE_VERSION = sh(script: "git tag --sort=-creatordate | head -n 1", returnStdout: true).trim()
                     echo "Detected Latest Release Tag: ${env.DOCKER_IMAGE_VERSION}"
                 }
             }
