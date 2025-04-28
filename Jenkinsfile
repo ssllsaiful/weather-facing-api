@@ -96,7 +96,6 @@
 // }
 
 
-
 pipeline {
     agent any
 
@@ -109,11 +108,14 @@ pipeline {
 
     stages {
 
-        stage('Webhook Triggered') {
+        stage('Capture Webhook Payload') {
             steps {
                 script {
                     // Read the payload sent by the webhook (assumed to be saved as a file)
                     def payload = readJSON file: '/tmp/github-payload.json'
+
+                    // Log the webhook payload for inspection
+                    echo "Webhook Payload: ${payload}"
 
                     // Extract the release tag from the webhook payload (e.g., "v1.0.0")
                     def releaseVersion = payload.release.tag_name
@@ -131,7 +133,8 @@ pipeline {
             steps {
                 script {
                     echo "Checking out code from GitHub..."
-                    git branch: 'main', url: 'https://github.com/ssllsaiful/weather-fetch-api.git'
+                    // Corrected the GitHub repository URL
+                    git branch: 'main', url: 'https://github.com/ssllsaiful/weather-facing-api.git'
                 }
             }
         }
