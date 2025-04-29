@@ -8,27 +8,26 @@
 
 # 2. Containerize the Application
 
-    Create a Dockerfile for containeraization
-    Create docker-compose.yaml file to build and development
+Create a Dockerfile for containeraization
+Create docker-compose.yaml file to build and development
 
 
 # 3. Version Control & CI/CD Pipeline
 
-     Create a public repository for the project repo link 
+Create a public repository for the project repo link 
     
-        https://github.com/ssllsaiful/weather-fetch-api.git
+https://github.com/ssllsaiful/weather-fetch-api.git
 
 
-Trigger when a new release is created.
+# Trigger when a new release is created.
 
     enable github webhook and config and  GitHub hook trigger for GITScm polling enable on jenkins for auto deployment
     take relese tag as images version for maching with api responce version.
     match version with /api/hello version output.
     ![alt text](images/image.png)
 
-
 # Part B: System Architecture Design
-    I have try to create a E-commarce architecture as per requrements 
+    I have tried to create a E-commarce architecture as per requrements 
 
    ![alt text](diagram/e-commerce-architecture.jpg)
 
